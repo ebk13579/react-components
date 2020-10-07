@@ -7,6 +7,7 @@ import useRightToLeft from '../../containers/rightToLeft/useRightToLeft';
 import { ALL_PLACEMENTS, Position } from '../popper/utils';
 import Portal from '../portal/Portal';
 import useIsClosing from './useIsClosing';
+import { FocusTrap } from '../focus';
 
 interface ContentProps extends React.HTMLAttributes<HTMLDivElement> {
     ref: React.RefObject<HTMLDivElement>;
@@ -152,24 +153,26 @@ const Dropdown = ({
 
     return (
         <Portal>
-            <div
-                ref={setPopperEl}
-                style={{ ...style, ...varPosition, ...varSize }}
-                role="dialog"
-                className={popperClassName}
-                onClick={handleClickContent}
-                onAnimationEnd={handleAnimationEnd}
-                onContextMenu={onContextMenu}
-                {...rest}
-            >
-                {/* Backdrop button, meant to override 'autoClose' option on mobile */}
-                <button type="button" className="dropDown-backdrop" title={c('Action').t`Close`} onClick={onClose}>
-                    <span className="sr-only">{c('Action').t`Close`}</span>
-                </button>
-                <div ref={contentRef} className={classnames(['dropDown-content'])} {...contentProps}>
-                    {children}
+            <FocusTrap>
+                <div
+                    ref={setPopperEl}
+                    style={{ ...style, ...varPosition, ...varSize }}
+                    role="dialog"
+                    className={popperClassName}
+                    onClick={handleClickContent}
+                    onAnimationEnd={handleAnimationEnd}
+                    onContextMenu={onContextMenu}
+                    {...rest}
+                >
+                    {/* Backdrop button, meant to override 'autoClose' option on mobile */}
+                    <button type="button" className="dropDown-backdrop" title={c('Action').t`Close`} onClick={onClose}>
+                        <span className="sr-only">{c('Action').t`Close`}</span>
+                    </button>
+                    <div ref={contentRef} className={classnames(['dropDown-content'])} {...contentProps}>
+                        {children}
+                    </div>
                 </div>
-            </div>
+            </FocusTrap>
         </Portal>
     );
 };

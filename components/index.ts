@@ -6,6 +6,7 @@ export * from './dropdown';
 export * from './breadcrumb';
 export * from './autocomplete';
 export * from './sidebar';
+export * from './focus';
 export * from './editor';
 export * from './challenge';
 export * from './countdown';
