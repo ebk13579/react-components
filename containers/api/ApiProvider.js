@@ -14,6 +14,8 @@ import { updateServerTime } from 'pmcrypto';
 import { c } from 'ttag';
 import { getApiError, getApiErrorMessage } from 'proton-shared/lib/api/helpers/apiErrorHelper';
 import { getClientID } from 'proton-shared/lib/apps/helper';
+import { localeCode } from 'proton-shared/lib/i18n';
+import { withLocaleHeaders } from 'proton-shared/lib/fetch/headers';
 
 import ApiContext from './apiContext';
 import { useModals, useNotifications } from '../../hooks';
@@ -174,14 +176,24 @@ const ApiProvider = ({ config, onLogout, children, UID }) => {
             if (appVersionBad.current) {
                 return Promise.reject(new Error(c('Error').t`Bad app version`));
             }
-            return callWithApiHandlers(rest).then((response) => {
-                const serverTime = getDateHeader(response.headers);
-                if (serverTime) {
-                    updateServerTime(serverTime);
-                }
-                hideOfflineNotification();
-                return output === 'stream' ? response.body : response[output]();
-            });
+            // Only need to send locale headers in public app
+            const config = UID ? rest : withLocaleHeaders(localeCode, rest);
+            return callWithApiHandlers(config)
+                .then((response) => {
+                    const serverTime = getDateHeader(response.headers);
+                    if (serverTime) {
+                        updateServerTime(serverTime);
+                    }
+                    hideOfflineNotification();
+                    return output === 'stream' ? response.body : response[output]();
+                })
+                .catch((e) => {
+                    const serverTime = e.response?.headers ? getDateHeader(e.response.headers) : undefined;
+                    if (serverTime) {
+                        updateServerTime(serverTime);
+                    }
+                    throw e;
+                });
         };
     }
 
